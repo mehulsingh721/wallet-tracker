@@ -32,6 +32,6 @@ app.post("/addToken", async (req: any, res: any) => {
     return res.send(erc20Bal)
 })
 
-app.listen(3000, () => {
+app.listen(3001, () => {
     console.log("Server started listening")
 })

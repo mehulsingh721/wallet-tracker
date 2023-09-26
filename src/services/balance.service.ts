@@ -35,18 +35,22 @@ export const saveErc20Balance = async (balanceData: any) => {
     balance.balance = (
       BigInt(existingBalance.balance) + BigInt(balanceData.balance.toString())
     ).toString();
-
-    await erc20BalanceRepository.save(existingBalance);
+    if (BigInt(balance.balance) >= 0) {
+      await erc20BalanceRepository.save(balance);
+    }
   } else {
-    const data = {
-      tokenAddress: balanceData.tokenAddress,
-      balance: balanceData.balance,
-      symbol: balanceData.symbol,
-      decimals: balanceData.decimals,
-      wallet: wallet,
-    };
+    if (balanceData.balance > 0) {
 
-    return await erc20BalanceRepository.save(data);
+      const data = {
+        tokenAddress: balanceData.tokenAddress,
+        balance: balanceData.balance,
+        symbol: balanceData.symbol,
+        decimals: balanceData.decimals,
+        wallet: wallet,
+      };
+
+      return await erc20BalanceRepository.save(data);
+    }
   }
 };
 
@@ -82,7 +86,9 @@ export const saveEthBalance = async (balanceData: any, operation: string) => {
         BigInt(existingBalance.balance) + BigInt(balanceData.balance)
       ).toString();
     }
-    await ethBalanceRepository.save(existingBalance);
+    if (BigInt(balance.balance) >= 0) {
+      await ethBalanceRepository.save(existingBalance);
+    }
   } else {
     const data = {
       tokenAddress: balanceData.tokenAddress,
@@ -116,23 +122,31 @@ export const saveNftBalance = async (balanceData: any) => {
     wallet = await saveWallet(walletAddress);
   }
 
-  if (existingBalance) {
-    balance = existingBalance;
-    balance.balance = (
-      BigInt(existingBalance.balance.toString()) +
-      BigInt(balanceData.balance.toString())
-    ).toString();
-    await nftBalanceRepository.save(existingBalance);
-  } else {
-    const data = {
-      collectionAddress: balanceData.collectionAddress,
-      balance: balanceData.balance,
-      tokenId: balanceData?.tokenId?.toString(),
-      type: balanceData.type,
-      wallet: wallet,
-    };
+  try {
+    if (existingBalance) {
+      console.log(existingBalance)
+      balance = existingBalance;
+      balance.balance = (
+        BigInt(existingBalance.balance.toString()) +
+        BigInt(balanceData.balance.toString())
+      ).toString();
+      if (BigInt(balance.balance) >= 0) {
+        await nftBalanceRepository.save(existingBalance);
+      }
+    } else {
+      const data = {
+        collectionAddress: balanceData.collectionAddress,
+        balance: balanceData.balance,
+        tokenId: balanceData?.tokenId?.toString(),
+        type: balanceData.type,
+        wallet: wallet,
+      };
 
-    await nftBalanceRepository.save(data);
+      await nftBalanceRepository.save(data);
+    }
+  }
+  catch (err) {
+    console.log(err)
   }
 };
 

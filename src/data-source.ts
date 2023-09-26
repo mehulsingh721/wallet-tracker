@@ -10,7 +10,7 @@ import { PoolBalances } from "./entity/PoolBalances"
 
 export const AppDataSource = new DataSource({
     type: "postgres",
-    host: "192.168.1.51",
+    host: "192.168.29.66",
     port: 5432,
     username: "admin",
     password: "admin@123",

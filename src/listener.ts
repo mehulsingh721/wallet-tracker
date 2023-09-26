@@ -19,7 +19,8 @@ export const erc20TransferEventListener = async () => {
       fromBlock: BigInt(i),
       toBlock: BigInt(i),
     });
-
+    
+    try {
     if (logs.length !== 0) {
       for (let j = 0; j < logs.length; j++) {
         if (logs[j].args.length > 1) {
@@ -27,10 +28,14 @@ export const erc20TransferEventListener = async () => {
           const from = logs[j].args[0];
           const to = logs[j].args[1];
           const amount = BigInt(logs[j].args[2]);
-          await saveErc20Token(from, token, -amount);
-          await saveErc20Token(to, token, amount);
+            await saveErc20Token(from, token, -amount);
+            await saveErc20Token(to, token, amount);
+          }
         }
       }
+    }
+    catch(err){
+      console.log(err)
     }
   }
 
@@ -77,17 +82,18 @@ export const nft721TrasferEventListener = async () => {
 
     if (logs.length !== 0) {
       for (let j = 0; j < logs.length; j++) {
-        if (logs[j].args._from) {
-          console.log(logs[j]);
-        }
         const collection: string = logs[j]["address"];
         const from = logs[j].args["_from"];
         const to = logs[j].args["_to"];
-        const toknenId = logs[j]["_tokenId"];
-        if(from !== zeroth) {
-          await saveNft(collection, from, toknenId, -1, "ERC721");
+        const toknenId = logs[j].args["_tokenId"];
+
+        if (toknenId && to && from) {
+
+          if (from !== zeroth) {
+            await saveNft(collection, from, toknenId.toString(), -1, "ERC721");
+          }
+          await saveNft(collection, to, toknenId.toString(), 1, "ERC721");
         }
-        await saveNft(collection, to, toknenId, 1, "ERC721");
       }
     }
   }
@@ -100,7 +106,7 @@ export const nft1155TrasferEventListener = async () => {
   const event2 = "TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)"
   const currentBlockNumber = await publicClient.getBlockNumber();
 
-  for (let i = BigInt(18219792); i < BigInt(currentBlockNumber); i++) {
+  for (let i = BigInt(18221759); i < BigInt(currentBlockNumber); i++) {
     const logs = await publicClient.getLogs({
       event: parseAbiItem(event1),
       fromBlock: BigInt(i),
@@ -113,9 +119,9 @@ export const nft1155TrasferEventListener = async () => {
         const collection: string = logs[j].args.operator;
         const from = logs[j].args["from"];
         const to = logs[j].args["to"];
-        const toknenId = logs[j]["id"];
-        const quantity = logs[j]["value"];
-        if(from !== zeroth) {
+        const toknenId = logs[j].args["id"].toString();
+        const quantity = logs[j].args["value"];
+        if (from !== zeroth) {
           await saveNft(collection, from, toknenId, -quantity, "ERC1155");
         }
         await saveNft(collection, to, toknenId, quantity, "ERC1155");
@@ -141,11 +147,11 @@ export const nft1155BatchTrasferEventListener = async () => {
         const from = logs[j].args["from"];
         const to = logs[j].args["to"];
         const ids = logs[j].args.ids
-        for(let i=0; i < ids.length; i++) {
-          const toknenId = ids[i];
+        for (let i = 0; i < ids.length; i++) {
+          const toknenId = ids[i].toString();
           const quantity = logs[i];
 
-          if(from !== zeroth) {
+          if (from !== zeroth) {
             await saveNft(collection, from, toknenId, -quantity, "ERC1155");
           }
           await saveNft(collection, to, toknenId, quantity, "ERC1155");
