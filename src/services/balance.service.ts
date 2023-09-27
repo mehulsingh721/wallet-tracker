@@ -3,6 +3,8 @@ import { Erc20Balances } from "../entity/Erc20Balances";
 import { EthBalances } from "../entity/EthBalances";
 import { NftBalances } from "../entity/NftBalances";
 import { PoolBalances } from "../entity/PoolBalances";
+import { getContractBalance } from "../helpers/erc20.helper";
+import { getWalletBalance } from "../helpers/eth.helper";
 import { getWallet, saveWallet } from "./wallet.service";
 
 const erc20BalanceRepository = AppDataSource.getRepository(Erc20Balances);
@@ -31,11 +33,8 @@ export const saveErc20Balance = async (balanceData: any) => {
     wallet = await saveWallet(walletAddress);
   }
   if (existingBalance) {
-    balance = existingBalance;
-    balance.balance = (
-      BigInt(existingBalance.balance) + BigInt(balanceData.balance.toString())
-    ).toString();
-    if (BigInt(balance.balance) >= 0) {
+    existingBalance.balance = (await getContractBalance(existingBalance.tokenAddress, existingBalance.wallet.address)).toString()
+    if (BigInt(existingBalance.balance) >= 0) {
       await erc20BalanceRepository.save(balance);
     }
   } else {
@@ -76,25 +75,18 @@ export const saveEthBalance = async (balanceData: any, operation: string) => {
   }
 
   if (existingBalance) {
-    balance = existingBalance;
-    if (operation === "sub") {
-      balance.balance = (
-        BigInt(existingBalance.balance) - BigInt(balanceData.balance)
-      ).toString();
-    } else {
-      balance.balance = (
-        BigInt(existingBalance.balance) + BigInt(balanceData.balance)
-      ).toString();
-    }
+    existingBalance.balance = (await getWalletBalance(existingBalance.wallet.address)).toString()
+
     if (BigInt(balance.balance) >= 0) {
       await ethBalanceRepository.save(existingBalance);
     }
   } else {
     const data = {
       tokenAddress: balanceData.tokenAddress,
-      balance: balanceData.balance,
       wallet: wallet,
+      balance: ""
     };
+    data.balance = (await getWalletBalance(existingBalance.wallet.address)).toString()
 
     await ethBalanceRepository.save(data);
   }
@@ -147,37 +139,5 @@ export const saveNftBalance = async (balanceData: any) => {
   }
   catch (err) {
     console.log(err)
-  }
-};
-
-export const savePoolBalance = async (balanceData: any) => {
-  let balance: any;
-  const { walletAddress } = balanceData;
-  const wallet = await getWallet(walletAddress);
-
-  const existingBalance = await poolBalanceRepository.findOne({
-    where: {
-      tokenAddress: balanceData.tokenAddress,
-      wallet: {
-        address: balanceData.walletAddress,
-      },
-    },
-    relations: {
-      wallet: true,
-    },
-  });
-
-  if (!wallet) {
-    await saveWallet(walletAddress);
-  }
-
-  if (existingBalance) {
-    balance = existingBalance;
-    balance.balance = (
-      BigInt(existingBalance.balance) + BigInt(balanceData.balance.toString())
-    ).toString();
-    await poolBalanceRepository.save(existingBalance);
-  } else {
-    await poolBalanceRepository.save(balanceData);
   }
 };

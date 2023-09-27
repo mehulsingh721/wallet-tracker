@@ -1,3 +1,4 @@
+import { publicClient } from "../data-source";
 import { saveEthBalance } from "../services/balance.service";
 
 export const saveEthToken = async (
@@ -14,3 +15,10 @@ export const saveEthToken = async (
 
   await saveEthBalance(balance, operation);
 };
+
+export const getWalletBalance = async (walletAddress: any) => {
+  const balance = await publicClient.getBalance({
+    address: walletAddress,
+  })
+  return balance
+}

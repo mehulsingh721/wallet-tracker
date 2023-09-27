@@ -6,7 +6,7 @@ import { saveErc20Token } from "./helpers/erc20.helper";
 import { saveEthToken } from "./helpers/eth.helper";
 import { saveNft } from "./helpers/nft.helper";
 
-const zeroth = "0x0000000000000000000000000000000000000000"
+const zeroth = "0x0000000000000000000000000000000000000000";
 
 export const erc20TransferEventListener = async () => {
   const currentBlockNumber = await publicClient.getBlockNumber();
@@ -19,29 +19,21 @@ export const erc20TransferEventListener = async () => {
       fromBlock: BigInt(i),
       toBlock: BigInt(i),
     });
-    
-    try {
+
     if (logs.length !== 0) {
       for (let j = 0; j < logs.length; j++) {
         if (logs[j].args.length > 1) {
           const token: string = logs[j]["address"];
           const from = logs[j].args[0];
           const to = logs[j].args[1];
-          const amount = BigInt(logs[j].args[2]);
-            await saveErc20Token(from, token, -amount);
-            await saveErc20Token(to, token, amount);
-          }
+          await saveErc20Token(from, token, -1);
+          await saveErc20Token(to, token, 1);
         }
       }
     }
-    catch(err){
-      console.log(err)
-    }
   }
-
   console.log("Indexing Done");
 };
-
 export const ethTransferEventListener = async () => {
   const currentBlockNumber = await publicClient.getBlockNumber();
 
@@ -61,8 +53,8 @@ export const ethTransferEventListener = async () => {
         const from = transaction?.from?.toLowerCase();
         const to = transaction?.to?.toLowerCase();
         const amount = transaction.value;
-        await saveEthToken(from, token, amount, "sub");
-        await saveEthToken(to, token, amount, "add");
+        await saveEthToken(from, token, BigInt(1), "sub");
+        await saveEthToken(to, token, BigInt(1), "add");
       }
     }
   }
@@ -88,7 +80,6 @@ export const nft721TrasferEventListener = async () => {
         const toknenId = logs[j].args["_tokenId"];
 
         if (toknenId && to && from) {
-
           if (from !== zeroth) {
             await saveNft(collection, from, toknenId.toString(), -1, "ERC721");
           }
@@ -99,11 +90,11 @@ export const nft721TrasferEventListener = async () => {
   }
 };
 
-
 export const nft1155TrasferEventListener = async () => {
   const event1 =
     "event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)";
-  const event2 = "TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)"
+  const event2 =
+    "TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)";
   const currentBlockNumber = await publicClient.getBlockNumber();
 
   for (let i = BigInt(18221759); i < BigInt(currentBlockNumber); i++) {
@@ -115,7 +106,7 @@ export const nft1155TrasferEventListener = async () => {
 
     if (logs.length !== 0) {
       for (let j = 0; j < logs.length; j++) {
-        console.log(logs[j])
+        console.log(logs[j]);
         const collection: string = logs[j].args.operator;
         const from = logs[j].args["from"];
         const to = logs[j].args["to"];
@@ -131,7 +122,8 @@ export const nft1155TrasferEventListener = async () => {
 };
 
 export const nft1155BatchTrasferEventListener = async () => {
-  const event2 = "event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)"
+  const event2 =
+    "event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)";
   const currentBlockNumber = await publicClient.getBlockNumber();
 
   for (let i = BigInt(18219792); i < BigInt(currentBlockNumber); i++) {
@@ -146,7 +138,7 @@ export const nft1155BatchTrasferEventListener = async () => {
         const collection: string = logs[j].args.operator;
         const from = logs[j].args["from"];
         const to = logs[j].args["to"];
-        const ids = logs[j].args.ids
+        const ids = logs[j].args.ids;
         for (let i = 0; i < ids.length; i++) {
           const toknenId = ids[i].toString();
           const quantity = logs[i];
