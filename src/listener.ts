@@ -8,11 +8,12 @@ import { saveNft } from "./helpers/nft.helper";
 
 const zeroth = "0x0000000000000000000000000000000000000000";
 
+const BLOCK_NUMBER = 18258008
+
 export const erc20TransferEventListener = async () => {
   try {
     const currentBlockNumber = await publicClient.getBlockNumber();
-
-    for (let i = BigInt(0); i < BigInt(currentBlockNumber); i++) {
+    for (let i = BigInt(BLOCK_NUMBER); i < BigInt(currentBlockNumber); i++) {
       const logs = await publicClient.getLogs({
         event: parseAbiItem(
           "event Transfer(address indexed, address indexed, uint)"
@@ -42,7 +43,7 @@ export const ethTransferEventListener = async () => {
   try {
     const currentBlockNumber = await publicClient.getBlockNumber();
 
-    for (let i = BigInt(0); i < BigInt(currentBlockNumber); i++) {
+    for (let i = BigInt(BLOCK_NUMBER); i < BigInt(currentBlockNumber); i++) {
       const block = await publicClient.getBlock({
         blockNumber: i,
       });
@@ -74,7 +75,7 @@ export const nft721TrasferEventListener = async () => {
       "event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId)";
     const currentBlockNumber = await publicClient.getBlockNumber();
 
-    for (let i = BigInt(0); i < BigInt(currentBlockNumber); i++) {
+    for (let i = BigInt(BLOCK_NUMBER); i < BigInt(currentBlockNumber); i++) {
       const logs = await publicClient.getLogs({
         event: parseAbiItem(event),
         fromBlock: BigInt(i),
@@ -103,6 +104,8 @@ export const nft721TrasferEventListener = async () => {
         }
       }
     }
+    console.log("Indexing Done");
+
   } catch (err) {
     console.log(err);
   }
@@ -116,7 +119,7 @@ export const nft1155TrasferEventListener = async () => {
       "TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)";
     const currentBlockNumber = await publicClient.getBlockNumber();
 
-    for (let i = BigInt(0); i < BigInt(currentBlockNumber); i++) {
+    for (let i = BigInt(BLOCK_NUMBER); i < BigInt(currentBlockNumber); i++) {
       const logs = await publicClient.getLogs({
         event: parseAbiItem(event1),
         fromBlock: BigInt(i),
@@ -125,8 +128,7 @@ export const nft1155TrasferEventListener = async () => {
 
       if (logs.length !== 0) {
         for (let j = 0; j < logs.length; j++) {
-          console.log(logs[j]);
-          const collection: string = logs[j].args.operator;
+          const collection: string = logs[j].address;
           const from = logs[j].args["from"];
           const to = logs[j].args["to"];
           const toknenId = logs[j].args["id"].toString();
@@ -138,6 +140,8 @@ export const nft1155TrasferEventListener = async () => {
         }
       }
     }
+    console.log("Indexing Done");
+
   } catch (err) {
     console.log(err);
   }
@@ -149,7 +153,7 @@ export const nft1155BatchTrasferEventListener = async () => {
       "event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)";
     const currentBlockNumber = await publicClient.getBlockNumber();
 
-    for (let i = BigInt(0); i < BigInt(currentBlockNumber); i++) {
+    for (let i = BigInt(BLOCK_NUMBER); i < BigInt(currentBlockNumber); i++) {
       const logs = await publicClient.getLogs({
         event: parseAbiItem(event2),
         fromBlock: BigInt(i),
@@ -157,8 +161,9 @@ export const nft1155BatchTrasferEventListener = async () => {
       });
 
       if (logs.length !== 0) {
+        
         for (let j = 0; j < logs.length; j++) {
-          const collection: string = logs[j].args.operator;
+          const collection: string = logs[j].address;
           const from = logs[j].args["from"];
           const to = logs[j].args["to"];
           const ids = logs[j].args.ids;
@@ -174,6 +179,7 @@ export const nft1155BatchTrasferEventListener = async () => {
         }
       }
     }
+
   } catch (err) {
     console.log(err);
   }

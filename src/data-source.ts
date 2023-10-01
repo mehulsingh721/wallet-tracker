@@ -10,19 +10,19 @@ import { PoolBalances } from "./entity/PoolBalances"
 
 export const AppDataSource = new DataSource({
     type: "postgres",
-    host: "192.168.29.66",
+    host: "192.168.29.70",
     port: 5432,
     username: "admin",
     password: "admin@123",
     database: "wallet-tracker",
     synchronize: true,
     logging: false,
-    entities: [Erc20Balances, EthBalances, NftBalances, PoolBalances, Wallet],
+    entities: [Wallet, Erc20Balances, EthBalances, NftBalances, PoolBalances],
     migrations: [],
     subscribers: [],
 })
 
 export const publicClient = createPublicClient({
     chain: mainnet,
-    transport: http("https://rpc.pulsechain.com/")
+    transport: http("http://124.123.77.26:8545")
 })

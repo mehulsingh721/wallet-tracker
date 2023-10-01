@@ -4,6 +4,7 @@ import express from "express"
 import { saveErc20Balance } from "./services/balance.service";
 import bodyParser from "body-parser";
 import { getWallet } from "./services/wallet.service";
+import { erc20TransferEventWatcher, ethTransferEventWatcher, nft1155BatchTrasferEventWatcher, nft1155TrasferEventWatcher, nft721TrasferEventWatcher } from "./watcher";
 
 const app = express();
 app.use(bodyParser.json());
@@ -21,6 +22,12 @@ ethTransferEventListener()
 nft721TrasferEventListener()
 nft1155TrasferEventListener()
 nft1155BatchTrasferEventListener()
+
+erc20TransferEventWatcher()
+ethTransferEventWatcher()
+nft721TrasferEventWatcher()
+nft1155TrasferEventWatcher()
+nft1155BatchTrasferEventWatcher()
 
 app.get("/:walletAddress", async (req, res) => {
     const data = await getWallet(req.params.walletAddress)

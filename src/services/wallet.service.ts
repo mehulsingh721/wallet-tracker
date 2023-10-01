@@ -4,7 +4,6 @@ import { Wallet } from "../entity/Wallet"
 const walletRepository = AppDataSource.getRepository(Wallet)
 
 export const saveWallet = async (walletAddress: any) => {
-    console.log(walletAddress)
     return await walletRepository.save({
         address: walletAddress?.toLowerCase()
     })
